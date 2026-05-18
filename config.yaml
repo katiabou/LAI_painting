@@ -1,0 +1,11 @@
+#target samples in admixed population
+target_pop_size: '10'
+
+#lai software path:
+flare_path: '/projects/racimolab/people/qcj125/MUNICH_FILES/MESO_DOGS/ANALYSES/programmes/flare.jar'
+mosaic_path: '/home/qcj125/MOSAIC/mosaic.R'
+rfmix_path: '/projects/racimolab/people/qcj125/programmes/RFmix2/rfmix/rfmix'
+simplai_path: '/projects/racimolab/people/qcj125/programmes/simpLAI/genomePainter-0.5'
+
+#rfmix iterations to run
+rfmix_iterations: 5

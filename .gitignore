@@ -1,0 +1,8 @@
+.RData
+.Rhistory
+.snakemake
+old_*/
+output/
+output_v1/
+benchmarks/
+data/
