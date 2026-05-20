@@ -4,7 +4,7 @@
 #uncomment the two following lines (seed, shift) if I want to run different subsets of seeds on different servers
 #make sure the SEED=config["seeds"] in the snakemake file is uncommented instead of the SEED=[101,102,103,104,105,106,107,108,109,110] list 
 #also use the snakemake --config seeds=${seeds} ${flags} -- "${args[@]}" &>>${logfile} command in this bash script at the end to feed the seeds 
-#then run the bash script as e.g. ./mesodog [101,102]
+#then run the bash script as e.g. ./lai_painting.sh [101,102]
 #seeds=$1
 #shift
 
