@@ -21,7 +21,7 @@ rule simulate_data:
         genome_size_bp = SEQ_LENGTH,
         seed = '{seed}'
     script:
-        "../scripts/slendr_null_size_new_model.R"
+        "../scripts/slendr_model.R"
 
 
 rule filter_simulated_vcf:
@@ -42,19 +42,6 @@ rule filter_simulated_vcf:
 
         bcftools index -f {output.sim_vcf_filt}
         '''
-
-# rule add_info_tract_file:
-#     """
-#     Add to tract file details for each run
-#     """
-#     input:
-#         tracts = 'output/seed_{seed}/slendr/sim_data/model_gf_{gf}_gen_adm_{gen_adm}_tracts.tsv'
-#     output:
-#         tracts_info = 'output/seed_{seed}/slendr/sim_data/model_gf_{gf}_gen_adm_{gen_adm}_tracts_info.tsv'
-#     shell:
-#         '''
-#         awk -F'\t' '{{$(NF+1)={wildcards.gen_adm} FS {wildcards.gf} FS {wildcards.seed};}}1' OFS='\t' {input.tracts} > {output.tracts_info}
-#         '''
 
 rule tract_lengths:
     """

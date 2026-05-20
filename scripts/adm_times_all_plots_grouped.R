@@ -8,6 +8,7 @@ library(tidyr)
 library(data.table)
 library(ggpubr)
 library(readr)
+library(ggh4x)
 
 options(scipen=999)
 
@@ -37,14 +38,6 @@ pattern <- paste0(
 time_outputs2 <- unlist(lapply(seed_dirs, function(seed_dir) {
     list.files(path = file.path(seed_dir, "compare_software/files/admixture_times"), pattern = pattern, full.names = TRUE)
 }))
-
-
-
-# #These are the percentage of sequence left after filtering for posterior probability
-# filt_outputs <- unlist(lapply(seed_dirs, function(seed_dir) {
-#     list.files(path = file.path(seed_dir, "compare_software/files/tracts/"), pattern = paste0("model_gf_.*_source_.*_gen_adm_.*_source_time_.*_.*_tracts_prob_", prob, "_filt_prop.tsv"), full.names = TRUE)
-# }))
-
 
 a <- grep("flare_adm_time", time_outputs, value = TRUE)
 b <- grep("mosaic_adm_time", time_outputs, value = TRUE)
@@ -126,3 +119,80 @@ write.table(result, file=snakemake@output[[2]], quote=FALSE, sep='\t', row.names
 
 
 
+### Plot geom_ribbon
+
+# all scenarios
+result <- result1 %>% filter(gf_rate==gf)
+
+# result and resultb need to fix the method names to capital
+result$method <- toupper(result$method)
+
+# make source pop size as factor
+result$source_pop_size <- as.factor(result$source_pop_size)
+
+abcd <- result %>%
+  group_by(method, gen_adm, source_pop_size, source_time) %>%
+  summarise(
+    avg_time = mean(inferred_gen_adm),
+    sd  = sd(inferred_gen_adm),
+    median_time = median(inferred_gen_adm),
+    min = quantile(inferred_gen_adm, probs=0.25),
+    max = quantile(inferred_gen_adm, probs=0.75),
+    min2 = quantile(inferred_gen_adm, probs=0.1),
+    max2 = quantile(inferred_gen_adm, probs=0.9),
+    .groups = "drop"
+  ) 
+
+#fix the y axis labels to have a subscript
+abcd$source_time2 <- abcd$source_time
+abcd$source_time2 <- factor(abcd$source_time2,levels=c('grouped_sources',0.2,0.6,1.4,1.8))
+levels(abcd$source_time2) <- c("t[grouped]","-t[4]","-t[2]", "t[2]","t[4]")
+
+abcd$gen_adm2 <- abcd$gen_adm
+abcd$gen_adm2 <- factor(abcd$gen_adm2,levels=c(50, 100, 200, 300, 400, 500))
+levels(abcd$gen_adm2) <- c("t[admix]==50","t[admix]==100", 
+                             "t[admix]==200","t[admix]==300",
+                             "t[admix]==400","t[admix]==500")
+
+# Make custom y axis limits for extreme values
+custom_y <- list(
+  scale_y_continuous(limits = c(0, 100)),
+  scale_y_continuous(limits = c(0, 200)),
+  scale_y_continuous(limits = c(0, 400)),
+  scale_y_continuous(limits = c(0, 600)),
+  scale_y_continuous(limits = c(0, 800)),
+  scale_y_continuous(limits = c(0, 1000))
+)
+
+png(snakemake@output[[3]], width=15, height=12, units='in', res=200, pointsize=4)
+abcd %>%
+  ggplot()+
+  geom_hline(aes(yintercept=gen_adm), linetype="dashed", color = "black", linewidth=0.8)+
+  geom_point(aes(x = source_pop_size, y = median_time, colour=method), size = 3, alpha=0) +
+  geom_line(aes(x = as.numeric(source_pop_size), y = median_time, colour=method)) +
+  geom_ribbon(aes(x = as.numeric(source_pop_size), ymax = max, ymin = min, fill = method), alpha = 0.3) +
+  geom_ribbon(aes(x = as.numeric(source_pop_size), ymax = max2, ymin = min2, fill = method), alpha = 0.3) +
+  scale_fill_manual(values = c("DATES" = "deepskyblue4",
+                               "FLARE" = "firebrick3", 
+                               "MOSAIC" = "darkolivegreen4"))+
+  scale_color_manual(values = c("DATES" = "deepskyblue4",
+                                "FLARE" = "firebrick3", 
+                                "MOSAIC" = "darkolivegreen4"))+  labs(x = 'Source sample size', y = 'Inferred admixture time', fill='Method') +
+  theme_bw()+
+  theme(axis.text.x=element_text(angle = 90, size = 10, vjust = 0.5),  
+        axis.text.y=element_text(size=10),
+        axis.title.x=element_text(size=14), 
+        axis.title.y=element_text(size=14), 
+        legend.text = element_text(size=14),
+        legend.title = element_text(size=14),
+        plot.title = element_text(hjust = 0.5, size=14),
+        panel.grid.minor = element_blank(),
+        strip.background =element_rect(fill="gray28"),
+        strip.text = element_text(colour = 'white', size=12),
+        legend.key.width= unit(1.5, 'cm'),
+        legend.position="bottom")+
+  facet_grid(gen_adm2~source_time2, scales="free", 
+             labeller=label_parsed)+
+  facetted_pos_scales(y = custom_y) +
+  guides(fill = guide_legend(override.aes = list(alpha = 1)), colour = 'none')
+dev.off()

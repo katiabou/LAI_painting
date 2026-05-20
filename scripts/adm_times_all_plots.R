@@ -8,6 +8,7 @@ library(tidyr)
 library(data.table)
 library(ggpubr)
 library(readr)
+library(ggh4x)
 
 options(scipen=999)
 
@@ -151,13 +152,6 @@ abcd <- result %>%
     .groups = "drop"
   ) 
 
-# for extreme estimates, cap at 2*adm_time, to make plot easier to read
-abcd$max[abcd$max > (abcd$gen_adm * 2)] <- abcd$gen_adm[abcd$max > (abcd$gen_adm * 2)] *2
-abcd$median_time[abcd$median_time > (abcd$gen_adm * 2)] <- abcd$gen_adm[abcd$median_time > (abcd$gen_adm * 2)] *2
-abcd$max2[abcd$max2 > (abcd$gen_adm * 2)] <- abcd$gen_adm[abcd$max2 > (abcd$gen_adm * 2)] *2
-abcd$min[abcd$min > (abcd$gen_adm * 2)] <- abcd$gen_adm[abcd$min > (abcd$gen_adm * 2)] *2
-abcd$min2[abcd$min2 > (abcd$gen_adm * 2)] <- abcd$gen_adm[abcd$min2 > (abcd$gen_adm * 2)] *2
-
 #fix the y axis labels to have a subscript
 abcd$source_time2 <- abcd$source_time
 abcd$source_time2 <- factor(abcd$source_time2,levels=c(0, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2))
@@ -173,6 +167,16 @@ levels(abcd$gen_adm2) <- c("t[admix]==50","t[admix]==100",
 
 
 ##### PLOT ALL INFERRED ADM TIME AGAINST SOURCE SAMPLE SIZE
+
+# Make custom y axis limits for extreme values
+custom_y <- list(
+  scale_y_continuous(limits = c(0, 100)),
+  scale_y_continuous(limits = c(0, 200)),
+  scale_y_continuous(limits = c(0, 400)),
+  scale_y_continuous(limits = c(0, 600)),
+  scale_y_continuous(limits = c(0, 800)),
+  scale_y_continuous(limits = c(0, 1000))
+)
 #png('adm_time_all.png', width=30, height=15, units='in', res=200, pointsize=4)
 png(snakemake@output[[4]], width=30, height=15, units='in', res=200, pointsize=4)
 abcd %>%
@@ -203,6 +207,7 @@ abcd %>%
         legend.position="bottom")+
   facet_grid(gen_adm2~source_time2, scales="free_y", 
              labeller=label_parsed)+
+  facetted_pos_scales(y = custom_y) +
   guides(fill = guide_legend(override.aes = list(alpha = 1)), colour = 'none')
 dev.off()
 
@@ -239,6 +244,7 @@ abcd %>%
         legend.position="bottom")+
   facet_wrap(~gen_adm2, scales="free_y", 
              labeller=label_parsed)+
+  facetted_pos_scales(y = custom_y) +
   guides(fill = guide_legend(override.aes = list(alpha = 1)), colour = 'none')
 dev.off()
 

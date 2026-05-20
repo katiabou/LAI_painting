@@ -253,6 +253,7 @@ rule plot_adm_times_group:
     output:
         all_adm_time_plot_group = 'output/compare_software/plots_grouped_sources/all_simulated_adm_times_gf_{gf}.png',
         all_adm_time_group = 'output/compare_software/files_grouped_sources/all_simulated_adm_times_gf_{gf}.txt',
+        all_adm_time_plot_group_ribbon = 'output/compare_software/plots_grouped_sources/all_simulated_adm_times_gf_{gf}_ribbon.png',
     params:
         geneflow = '{gf}'
     script:

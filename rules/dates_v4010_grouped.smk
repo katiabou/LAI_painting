@@ -137,7 +137,7 @@ rule parfile_dates_grouped:
 
 rule run_dates_grouped:
     """
-    Run DATES FIX THE ISSUE WITH SPECIFYING THE OUTPUT PATH IN DATES COMMAND!
+    Run DATES
     Added the || true part at the end, since it was giving a segmentation fault error saying that -r parameter unknown (even though it is)
     """
     input:

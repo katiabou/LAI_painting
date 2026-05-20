@@ -24,7 +24,7 @@ rule prep_sample_files:
         target = 'pop_mix',
         source_time = '{source_time}'
     script:
-        "../scripts/prep_sample_name_files_scenario1_final.R"
+        "../scripts/prep_sample_name_files.R"
 
 
 ###############
@@ -58,6 +58,7 @@ rule flare_simulation:
     output:
         flare_out = 'output/seed_{seed}/flare/output/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_source_time_{source_time}.anc.vcf.gz',
     params:
+        flare_path = config['flare_path'],
         prefix_out = 'output/seed_{seed}/flare/output/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_source_time_{source_time}',
         gen = '{gen_adm}'
     threads: 4
@@ -67,7 +68,7 @@ rule flare_simulation:
         'benchmarks/seed_{seed}/flare/output/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_source_time_{source_time}.tsv'
     shell:
         '''
-        java -Xmx500g -jar /projects/racimolab/people/qcj125/MUNICH_FILES/MESO_DOGS/ANALYSES/programmes/flare.jar \
+        java -Xmx500g -jar {params.flare_path} \
         ref={input.sim_vcf_filt} \
         ref-panel={input.meta_source_name_pop} \
         gt={input.sim_vcf_filt} \

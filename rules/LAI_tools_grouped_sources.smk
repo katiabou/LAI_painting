@@ -25,7 +25,7 @@ rule prep_sample_files_grouped_sources:
         source_2 = 'pop_c',
         target = 'pop_mix',
     script:
-        "../scripts/prep_sample_name_files_grouped_sources_v2.R"
+        "../scripts/prep_sample_name_files_grouped_sources.R"
 
 
 ###############
@@ -47,6 +47,7 @@ rule flare_simulation_grouped_sources:
         flare_out = 'output/seed_{seed}/flare/output_grouped_sources/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_grouped_sources.anc.vcf.gz',
         flare_model = 'output/seed_{seed}/flare/output_grouped_sources/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_grouped_sources.model'
     params:
+        flare_path = config['flare_path'],
         prefix_out = 'output/seed_{seed}/flare/output_grouped_sources/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_grouped_sources',
         gen = '{gen_adm}'
     threads: 4
@@ -56,7 +57,7 @@ rule flare_simulation_grouped_sources:
         'benchmarks/seed_{seed}/flare/output_grouped_sources/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_grouped_sources.tsv'
     shell:
         '''
-        java -Xmx500g -jar /projects/racimolab/people/qcj125/MUNICH_FILES/MESO_DOGS/ANALYSES/programmes/flare.jar \
+        java -Xmx500g -jar {params.flare_path} \
         ref={input.sim_vcf_filt} \
         ref-panel={input.meta_source_name_pop} \
         gt={input.sim_vcf_filt} \
@@ -250,6 +251,7 @@ rule mosaic_grouped_sources:
         la_results = 'output/seed_{seed}/mosaic/output_grouped_sources/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_grouped_sources/MOSAIC_RESULTS/localanc_pop_mix.RData',
         model_results = 'output/seed_{seed}/mosaic/output_grouped_sources/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_grouped_sources/MOSAIC_RESULTS/pop_mix.RData',
     params:
+        path_mosaic = config['mosaic_path'],
         dir_mosaic = 'output/seed_{seed}/mosaic/output_grouped_sources/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_grouped_sources',
         tmp_dir = '/tmp/seed_{seed}_model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_grouped_sources',
         output_dir = 'output/seed_{seed}/mosaic/output_grouped_sources/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_grouped_sources/MOSAIC_RESULTS',
@@ -268,7 +270,7 @@ rule mosaic_grouped_sources:
         # make temporary folder
         mkdir {params.tmp_dir}
 
-        Rscript /home/qcj125/MOSAIC/mosaic.R \
+        Rscript {params.path_mosaic} \
         {params.target} \
         {params.dir_mosaic}/ \
         --number 10 \
@@ -353,6 +355,7 @@ rule run_rfmix_grouped_sources:
     output:
         rfmix_out = 'output/seed_{seed}/rfmix/output_grouped_sources/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_grouped_sources.fb.tsv',
     params:
+        rfmix_path = config['rfmix_path'],
         prefix = 'output/seed_{seed}/rfmix/output_grouped_sources/model_gf_{gf}_source_{source}_gen_adm_{gen_adm}_grouped_sources',
         rfmix_iterations = config['rfmix_iterations'],
         gen = '{gen_adm}'
@@ -361,7 +364,7 @@ rule run_rfmix_grouped_sources:
     threads: 6
     shell:
         '''
-        /projects/racimolab/people/qcj125/programmes/RFmix2/rfmix/rfmix \
+        {params.rfmix_path} \
         -f {input.target_vcf} \
         -r {input.source_vcf} \
         -m {input.meta_source_name_pop} \
